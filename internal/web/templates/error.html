@@ -1,0 +1,22 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="dark light">
+  <title>{{.Status}} · binnacle</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body class="login-body">
+  <main class="login">
+    <div class="login-brand">binnacle</div>
+    <div class="error-code">{{.Status}}</div>
+    <p class="lead">{{.Message}}</p>
+    <a class="button" href="/">back to overview</a>
+    <p class="login-hint">binnacle {{.Version}} · {{.Hostname}}</p>
+  </main>
+</body>
+</html>
+{{end}}

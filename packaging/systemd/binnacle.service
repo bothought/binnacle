@@ -1,0 +1,28 @@
+[Unit]
+Description=Binnacle server admin panel
+Documentation=https://github.com/bothought/binnacle
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/binnacle serve --config %h/.config/binnacle/config.yaml
+Restart=on-failure
+RestartSec=5
+
+# Actions and host inspection run as this user. Keep the panel loopback-only
+# and put an authenticated reverse proxy in front of it. The home directory is
+# deliberately left writable because container/Flatpak updates and backup
+# scripts need it; use a dedicated user if that is not acceptable.
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=%h/.local/state/binnacle
+
+# Actions that need to write inside your home directory (for example, a
+# backup script) need ProtectHome=off or an explicit bind mount. Actions that
+# need sudo require NoNewPrivileges=no plus a narrow sudoers entry.
+
+[Install]
+WantedBy=default.target

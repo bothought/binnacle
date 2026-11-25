@@ -1,0 +1,60 @@
+{{define "content"}}
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Updates</h1>
+      <p class="lead">Installed software compared with upstream releases. Security-looking releases are flagged from the release notes.</p>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="filters">
+      <a class="{{if eq .Filter "open"}}active{{end}}" href="/updates">open <span class="pill">{{.OpenCount}}</span></a>
+      <a class="{{if eq .Filter "urgent"}}active{{end}}" href="/updates?show=urgent">urgent{{if .UrgentCount}} <span class="pill down">{{.UrgentCount}}</span>{{end}}</a>
+      <a class="{{if eq .Filter "ack"}}active{{end}}" href="/updates?show=ack">acknowledged <span class="pill">{{.AckCount}}</span></a>
+      <a class="{{if eq .Filter "all"}}active{{end}}" href="/updates?show=all">all</a>
+    </div>
+  </div>
+
+  {{if and (not .Enabled) (not .Updates)}}
+  <div class="empty">Update checks are disabled in the configuration.</div>
+  {{else if .Updates}}
+  <div class="update-list">
+    {{range .Updates}}
+    <article class="update {{if .Acknowledged}}ack{{end}}">
+      <div class="update-main">
+        <span class="badge sev-{{.Severity}}">{{severity .Severity}}</span>
+        <div class="update-name">
+          <span class="svc-title">{{.Name}}</span>
+          <span class="sub">{{.Source}} · checked {{ago .CheckedAt}}</span>
+        </div>
+        <div class="update-version">
+          {{if .Current}}<span class="mono">{{.Current}}</span>{{else}}<span class="muted">unknown</span>{{end}}
+          <span class="muted">→</span>
+          <span class="mono strong">{{.Latest}}</span>
+        </div>
+        {{if .URL}}<a class="update-link" href="{{.URL}}" target="_blank" rel="noreferrer noopener">release ↗</a>{{end}}
+        {{if and $.IsAdmin (not .Acknowledged)}}
+        <form method="post" action="/updates/ack">
+          <input type="hidden" name="csrf" value="{{$.CSRF}}">
+          <input type="hidden" name="key" value="{{.Key}}">
+          <button class="ghost small" type="submit">dismiss</button>
+        </form>
+        {{end}}
+      </div>
+      {{if .Notes}}
+      <details class="notes">
+        <summary>release notes</summary>
+        <pre>{{.Notes}}</pre>
+      </details>
+      {{end}}
+    </article>
+    {{end}}
+  </div>
+  {{else}}
+  <div class="empty">No updates in this view. {{if eq .Filter "open"}}Everything tracked is up to date or acknowledged.{{end}}</div>
+  {{end}}
+
+  <p class="hint">Urgency is a heuristic based on the release notes. Always read the linked release before updating. Binnacle never updates anything automatically.</p>
+</section>
+{{end}}

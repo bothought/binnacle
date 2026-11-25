@@ -1,0 +1,66 @@
+{{define "content"}}
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Actions</h1>
+      <p class="lead">Commands declared in the server-side configuration. Nothing is editable from this page.</p>
+    </div>
+  </div>
+
+  {{if .Actions}}
+  <div class="action-list">
+    {{range .Actions}}
+    <article class="action-card">
+      <div>
+        <div class="action-title">{{.Label}} {{if .Running}}<span class="badge running">running</span>{{end}}</div>
+        <div class="sub">{{if .Description}}{{.Description}} · {{end}}{{if .Category}}{{.Category}} · {{end}}timeout {{timeout .Timeout}}</div>
+        {{if .HasLast}}
+        <div class="sub">last run {{ago .Last.StartedAt}} · {{.Last.Status}} · by {{.Last.User}}</div>
+        {{else}}
+        <div class="sub">never run</div>
+        {{end}}
+      </div>
+      <div class="action-actions">
+        {{if $.IsAdmin}}
+          {{if .Running}}
+          <a class="button" href="/runs/{{.Last.ID}}">view output</a>
+          {{else}}
+          <a class="button" href="/actions/{{.ID}}/run">run</a>
+          {{end}}
+        {{else}}
+          <span class="muted">read-only</span>
+        {{end}}
+      </div>
+    </article>
+    {{end}}
+  </div>
+  {{else}}
+  <div class="empty">
+    No actions configured. Add them to <code>config.yaml</code>:
+    <pre class="snippet">actions:
+  - id: restart-caddy
+    label: Restart Caddy
+    command: [systemctl, --user, restart, caddy]
+    timeout: 30s</pre>
+  </div>
+  {{end}}
+
+  <section class="history">
+    <h2>Recent runs</h2>
+    {{if .Runs}}
+    <div class="run-list">
+      {{range .Runs}}
+      <a class="run-row" href="/runs/{{.ID}}">
+        <span class="dot {{if eq .Status "success"}}ok{{else if eq .Status "failed"}}down{{else}}warn{{end}}"></span>
+        <span class="run-label">{{.Label}}</span>
+        <span class="sub">{{.User}} · {{ago .StartedAt}}</span>
+        <span class="run-status {{.Status}}">{{.Status}}{{if eq .Status "failed"}} ({{.ExitCode}}){{end}}</span>
+      </a>
+      {{end}}
+    </div>
+    {{else}}
+    <div class="empty">No runs yet.</div>
+    {{end}}
+  </section>
+</section>
+{{end}}
