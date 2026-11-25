@@ -64,7 +64,7 @@ and focuses on host inventory, updates, and explicit maintenance actions.
 
 ## Quick start
 
-Requirements: Linux, systemd, Go 1.26+ to build. Podman or Docker is optional.
+Requirements: Linux, systemd, Go 1.26.11+ to build. Podman or Docker is optional.
 
 ```sh
 git clone https://github.com/bothought/binnacle
