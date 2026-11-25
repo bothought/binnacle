@@ -1,0 +1,40 @@
+{{define "content"}}
+<section class="page narrow">
+  <div class="page-head">
+    <div>
+      <p class="kicker"><a href="/actions">actions</a> / confirm</p>
+      <h1>{{.Action.Label}}</h1>
+      {{if .Action.Description}}<p class="lead">{{.Action.Description}}</p>{{end}}
+    </div>
+  </div>
+
+  {{if .Error}}<div class="flash err-flash">{{.Error}}</div>{{end}}
+
+  <div class="confirm-card">
+    <div class="label">command</div>
+    <pre class="snippet">{{command .Action.Command}}</pre>
+    <div class="sub">runs as the binnacle service user · timeout {{timeout .Action.Timeout}}{{if .Action.Category}} · {{.Action.Category}}{{end}}</div>
+
+    {{if .Running}}
+    <div class="flash warn-flash">This action is already running. Wait for it to finish or open the current run.</div>
+    <a class="button" href="/actions/{{.Action.ID}}/run">reload</a>
+    {{else}}
+    <form method="post" action="/actions/run" class="confirm-form">
+      <input type="hidden" name="csrf" value="{{.CSRF}}">
+      <input type="hidden" name="id" value="{{.Action.ID}}">
+      {{if .Action.Dangerous}}
+      <label>Type <code>{{.Action.Label}}</code> to confirm
+        <input name="confirm_text" autocomplete="off" spellcheck="false" autofocus>
+      </label>
+      {{else if .Action.Confirm}}
+      <label class="check"><input type="checkbox" name="confirm" value="yes"> I understand what this command does</label>
+      {{end}}
+      <div class="form-actions">
+        <button type="submit" class="{{if .Action.Dangerous}}danger{{end}}">run now</button>
+        <a class="ghost" href="/actions">cancel</a>
+      </div>
+    </form>
+    {{end}}
+  </div>
+</section>
+{{end}}

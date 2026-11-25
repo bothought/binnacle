@@ -1,0 +1,80 @@
+{{define "content"}}
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Settings</h1>
+      <p class="lead">Read-only view of the running configuration. Edit the YAML file and restart or reload the service.</p>
+    </div>
+  </div>
+
+  <div class="settings-grid">
+    <section class="panel">
+      <h2>Host</h2>
+      <dl class="kv">
+        <dt>hostname</dt><dd>{{.Hostname}}</dd>
+        <dt>auth</dt><dd>{{.AuthMode}}</dd>
+        <dt>runtime</dt><dd>{{.RuntimeKind}}</dd>
+        <dt>state</dt><dd class="mono">{{.StateDir}}</dd>
+        <dt>config</dt><dd class="mono">{{.ConfigPath}}</dd>
+        <dt>version</dt><dd>{{.Version}}</dd>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2>Inventory</h2>
+      <dl class="kv">
+        <dt>actions</dt><dd>{{.ActionCount}}</dd>
+        <dt>updates tracked</dt><dd>{{.UpdateCount}}</dd>
+        <dt>last update check</dt><dd>{{if .Scanned}}{{ago .Scanned}}{{else}}never{{end}}</dd>
+        <dt>notification channels</dt><dd>{{if .Channels}}{{range .Channels}}<span class="badge">{{.}}</span>{{end}}{{else}}none{{end}}</dd>
+      </dl>
+      {{if .Channels}}
+      <form method="post" action="/settings/notify-test" class="test-form">
+        <input type="hidden" name="csrf" value="{{.CSRF}}">
+        <label>channel
+          <select name="channel">
+            <option value="">all channels</option>
+            {{range .Channels}}<option value="{{.}}">{{.}}</option>{{end}}
+          </select>
+        </label>
+        <button type="submit" class="ghost">send test</button>
+      </form>
+      {{else}}
+      <p class="hint">Add an email, ntfy or webhook channel to enable notifications.</p>
+      {{end}}
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Integrations</h2>
+    {{if .Summaries}}
+    <div class="ext-grid">
+      {{range .Summaries}}
+      <div class="ext">
+        <div class="ext-top">
+          <span class="dot {{statuscls .Status}}"></span>
+          <span class="ext-name">{{.Name}}</span>
+          <span class="ext-status {{statuscls .Status}}">{{status .Status}}</span>
+        </div>
+        <div class="ext-detail">{{.Detail}}</div>
+        {{if .Error}}<div class="ext-error">{{.Error}}</div>{{end}}
+        <div class="sub">checked {{ago (unix .CheckedAt)}}</div>
+        {{if .URL}}<a class="ext-link" href="{{.URL}}" target="_blank" rel="noreferrer noopener">open ↗</a>{{end}}
+      </div>
+      {{end}}
+    </div>
+    {{else}}
+    <p class="hint">No integrations configured. Beszel, Uptime Kuma, Caddy and generic JSON endpoints can be added in the config file.</p>
+    {{end}}
+  </section>
+
+  <section class="panel">
+    <h2>Security</h2>
+    <p class="hint">
+      Binnacle executes only the commands declared in its server-side configuration. The web UI cannot create or edit actions.
+      Keep the config file owned by the service user, expose the panel through Authelia or another forward-auth proxy, and do not
+      run it as root unless you need system-wide process attribution.
+    </p>
+  </section>
+</section>
+{{end}}

@@ -1,0 +1,25 @@
+{{define "content"}}
+<section class="page">
+  <div class="page-head">
+    <div>
+      <p class="kicker"><a href="/actions">actions</a> / run {{short .Run.ID 8}}</p>
+      <h1>{{.Run.Label}}</h1>
+      <p class="lead">
+        <span class="dot {{if eq .Run.Status "success"}}ok{{else if eq .Run.Status "failed"}}down{{else}}warn{{end}}"></span>
+        <span id="run-state">{{.Run.Status}}</span>
+        · started {{ago .Run.StartedAt}}
+        · by {{.Run.User}} ({{.Run.IP}})
+        {{if ne .Run.Status "running"}}· exit {{.Run.ExitCode}}{{end}}
+      </p>
+    </div>
+    <a class="button" href="/actions">back to actions</a>
+  </div>
+
+  <div class="label">command</div>
+  <pre class="snippet">{{.Run.Command}}</pre>
+  {{if .Run.Error}}<div class="flash err-flash">{{.Run.Error}}</div>{{end}}
+
+  <div class="label">output {{if .Active}}<span class="badge running">live</span>{{end}}</div>
+  <pre id="run-log" class="run-log" data-run="{{.Run.ID}}" data-live="{{if .Active}}1{{else}}0{{end}}">{{.Output}}</pre>
+</section>
+{{end}}

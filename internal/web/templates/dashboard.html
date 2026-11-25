@@ -1,0 +1,144 @@
+{{define "content"}}{{template "dashboard_content" .}}{{end}}
+{{define "dashboard_content"}}
+<div id="dashboard" hx-get="/partials/dashboard" hx-trigger="every 10s" hx-swap="outerHTML">
+  <section class="system">
+    <div class="sys-head">
+      <div>
+        <h1 class="sr-only">Overview</h1>
+        <div class="kicker">host</div>
+        <div class="os">{{.Snap.OS}} <span class="muted">· {{.Snap.Kernel}}</span></div>
+      </div>
+      <div class="sys-meta">
+        <span>up {{uptime .Snap.Uptime}}</span>
+        {{if .Snap.OSImageVersion}}<span class="muted">image {{.Snap.OSImageVersion}}</span>{{end}}
+        {{if .Snap.StagedVersion}}<span class="warn">staged {{.Snap.StagedVersion}}</span>{{end}}
+      </div>
+    </div>
+    <div class="metrics">
+      <div class="metric">
+        <div class="label">cpu</div>
+        <div class="value">{{pct .Snap.CPUPercent}}</div>
+        {{spark .History "cpu"}}
+        <div class="sub">{{.Snap.CPUModel}}{{if .Snap.CPUCores}} · {{.Snap.CPUCores}} cores{{end}}</div>
+      </div>
+      <div class="metric">
+        <div class="label">memory</div>
+        <div class="value">{{pct .Snap.MemPercent}}</div>
+        {{spark .History "mem"}}
+        <div class="sub">{{bytes .Snap.MemUsed}} / {{bytes .Snap.MemTotal}}{{if .Snap.SwapTotal}} · swap {{pct .Snap.SwapPercent}}{{end}}</div>
+      </div>
+      <div class="metric">
+        <div class="label">load</div>
+        <div class="value">{{printf "%.2f" .Snap.Load1}}</div>
+        <div class="sub">5m {{printf "%.2f" .Snap.Load5}} · 15m {{printf "%.2f" .Snap.Load15}}</div>
+      </div>
+      <div class="metric">
+        <div class="label">network</div>
+        <div class="value small">{{rate .Snap.NetRx}} <span class="muted">↓</span></div>
+        {{spark .History "net"}}
+        <div class="sub">{{rate .Snap.NetTx}} ↑</div>
+      </div>
+      <div class="metric">
+        <div class="label">disks</div>
+        <div class="value">{{if .Snap.Disks}}{{pct (index .Snap.Disks 0).Percent}}{{else}}—{{end}}</div>
+        {{spark .History "disk"}}
+        <div class="sub">
+          {{range .Snap.Disks}}<span class="disk-item" title="{{.FSType}}">{{.Mount}} {{pct .Percent}}</span>{{end}}
+        </div>
+      </div>
+      {{if .Snap.Temps}}
+      <div class="metric">
+        <div class="label">temperature</div>
+        <div class="value">{{printf "%.0f°" (index .Snap.Temps 0).Celsius}}</div>
+        <div class="sub">{{range .Snap.Temps}}<span class="disk-item">{{short .Sensor 24}} {{printf "%.0f°" .Celsius}}</span>{{end}}</div>
+      </div>
+      {{end}}
+    </div>
+  </section>
+
+  <section class="attention">
+    <h2>Attention</h2>
+    <div class="attn-list">
+      {{range .Attention}}
+        {{if .Link}}
+          <a class="attn {{.Class}}" href="{{.Link}}"><span class="dot {{.Class}}"></span><span>{{.Text}}</span></a>
+        {{else}}
+          <div class="attn {{.Class}}"><span class="dot {{.Class}}"></span><span>{{.Text}}</span></div>
+        {{end}}
+      {{end}}
+    </div>
+  </section>
+
+  {{if .Summaries}}
+  <section class="external">
+    <div class="section-head"><h2>External</h2></div>
+    <div class="ext-grid">
+      {{range .Summaries}}
+      <div class="ext">
+        <div class="ext-top">
+          <span class="dot {{statuscls .Status}}"></span>
+          <span class="ext-name">{{.Name}}</span>
+          <span class="ext-status {{statuscls .Status}}">{{status .Status}}</span>
+        </div>
+        <div class="ext-detail">{{.Detail}}</div>
+        {{if .Error}}<div class="ext-error" title="{{.Error}}">{{short .Error 72}}</div>{{end}}
+        {{if .URL}}<a class="ext-link" href="{{.URL}}" target="_blank" rel="noreferrer noopener">open ↗</a>{{end}}
+      </div>
+      {{end}}
+    </div>
+  </section>
+  {{end}}
+
+  <section class="services-block">
+    <div class="section-head">
+      <h2>Services <span class="count">{{.VisibleCount}}{{if .TotalCount}} / {{.TotalCount}}{{end}}</span></h2>
+      <div class="legend">
+        {{if .PublicCount}}<span>{{.PublicCount}} public</span>{{end}}
+        {{if .NewCount}}<span class="warn">{{.NewCount}} new</span>{{end}}
+        {{if .HiddenCount}}<span class="muted">{{.HiddenCount}} hidden</span>{{end}}
+        <a href="/services">all services →</a>
+      </div>
+    </div>
+    {{if .Services}}
+    <div class="svc-table">
+      {{range .Services}}
+      <div class="svc-row">
+        <div class="svc-ports">{{.PortText}}</div>
+        <div class="svc-name">
+          <span class="svc-title">{{.Display}}</span>
+          {{if .Unit}}<span class="sub">{{.Unit}}</span>{{else if .Container}}<span class="sub">{{.Container}}</span>{{end}}
+        </div>
+        <span class="badge exposure-{{.Exposure}}">{{exposure .Exposure}}</span>
+        {{if .IsNew}}<span class="badge new">NEW</span>{{else}}<span></span>{{end}}
+        {{if .PublicURL}}<a class="svc-url" href="{{.PublicURL}}" target="_blank" rel="noreferrer noopener">↗</a>{{else}}<span></span>{{end}}
+        <span class="sub svc-seen">{{.LastLabel}}</span>
+      </div>
+      {{end}}
+    </div>
+    {{else}}
+    <div class="empty">No services discovered yet. The first scan establishes a baseline.</div>
+    {{end}}
+  </section>
+
+  {{if .Actions}}
+  <section class="actions-block">
+    <div class="section-head">
+      <h2>Actions</h2>
+      <a href="/actions">history →</a>
+    </div>
+    <div class="action-grid">
+      {{range .Actions}}
+        {{if $.IsAdmin}}
+        <a class="action-btn {{if .Running}}running{{end}}" href="/actions/{{.ID}}/run">
+          <span class="action-label">{{.Label}}</span>
+          {{if .Running}}<span class="badge running">running</span>{{else if .HasLast}}<span class="sub">last {{ago .Last.StartedAt}}</span>{{end}}
+        </a>
+        {{else}}
+        <div class="action-btn"><span class="action-label">{{.Label}}</span><span class="sub">read-only</span></div>
+        {{end}}
+      {{end}}
+    </div>
+  </section>
+  {{end}}
+</div>
+{{end}}
