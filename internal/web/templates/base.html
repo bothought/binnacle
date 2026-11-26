@@ -1,0 +1,47 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="dark light">
+  <title>{{.Title}} · binnacle</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/htmx.min.js" defer></script>
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="top-left">
+      <a class="brand" href="/">binnacle</a>
+      <span class="host" title="hostname">{{.Hostname}}</span>
+    </div>
+    <nav class="nav">
+      <a class="{{if eq .Nav "overview"}}active{{end}}" href="/">overview</a>
+      <a class="{{if eq .Nav "services"}}active{{end}}" href="/services">services</a>
+      <a class="{{if eq .Nav "updates"}}active{{end}}" href="/updates">updates</a>
+      <a class="{{if eq .Nav "actions"}}active{{end}}" href="/actions">actions</a>
+      <a class="{{if eq .Nav "settings"}}active{{end}}" href="/settings">settings</a>
+    </nav>
+    <div class="top-right">
+      <span class="who">{{.User}} <span class="role">{{.Role}}</span></span>
+      <a class="logout" href="/logout">logout</a>
+    </div>
+  </header>
+  {{if .Demo}}<div class="demo">Demo mode: authentication bypassed, actions disabled, sample services and updates.</div>{{end}}
+  {{if .Notice}}<div class="flash ok-flash">{{.Notice}}</div>{{end}}
+  {{if .Error}}<div class="flash err-flash">{{.Error}}</div>{{end}}
+  <main>
+    {{template "content" .}}
+  </main>
+  <footer class="foot">
+    <span>binnacle {{.Version}}</span>
+    <span class="sep">·</span>
+    <span>{{.Hostname}}</span>
+    <span class="sep">·</span>
+    <span>{{.Now.Format "2006-01-02 15:04"}}</span>
+  </footer>
+</body>
+</html>
+{{end}}

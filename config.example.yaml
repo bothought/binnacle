@@ -1,0 +1,138 @@
+# Binnacle configuration
+#
+# Copy this file to ~/.config/binnacle/config.yaml and run:
+#   binnacle check --config ~/.config/binnacle/config.yaml
+#   binnacle serve --config ~/.config/binnacle/config.yaml
+#
+# ${ENV_VAR} is expanded from the environment. A referenced variable that is
+# not set is a startup error, so secrets never silently become empty.
+
+listen: 127.0.0.1:8099
+base_url: https://admin.example.com
+state_dir: ~/.local/state/binnacle
+# hostname: my-server
+
+auth:
+  mode: forward                 # forward or local
+  session_ttl: 12h
+
+  forward:
+    trusted_proxies: ["127.0.0.1", "::1"]
+    user_header: Remote-User
+    email_header: Remote-Email
+    groups_header: Remote-Groups
+    admin_groups: [admins]      # tighten to your Authelia group
+    viewer_groups: [viewers]    # read-only users
+    # Strongly recommended: have Caddy send this shared secret and set the
+    # environment variable. It blocks direct traffic that forges Remote-*.
+    proxy_secret: ""
+    proxy_secret_header: X-Binnacle-Proxy-Secret
+    # logout_url: https://auth.example.com/logout
+
+  # Local fallback for deployments without a reverse-proxy identity provider.
+  # Generate a hash with: binnacle auth hash
+  # Generate a TOTP secret with: binnacle auth totp --account admin
+  # local:
+  #   username: admin
+  #   password_hash: "$argon2id$..."
+  #   totp_secret: ""
+
+collector:
+  interval: 10s
+  metrics_interval: 5s
+  disk_warn_percent: 90
+  # ignore_patterns:
+  #   - "*steam*"
+  #   - "*kdeconnect*"
+
+# All integrations are optional. Remove or comment out a block to hide it.
+integrations:
+  # beszel:
+  #   url: http://127.0.0.1:8091
+  #   auth: forward             # forward, password or none
+  #   remote_email: ${BESZEL_EMAIL}
+  #   # email: admin@example.com
+  #   # password: ${BESZEL_PASSWORD}
+
+  # uptime_kuma:
+  #   url: https://kuma.example.com
+  #   headers: {}
+
+  # caddy:
+  #   admin_url: http://127.0.0.1:2019
+
+  # custom:
+  #   - name: Gatus
+  #     url: https://status.example.com/api/v1/endpoints/statuses
+  #     status_path: "0.success"
+  #     title_path: "0.name"
+  #     detail_path: "0.results.0.status"
+
+updates:
+  enabled: true
+  interval: 6h
+  github_token: ""              # raises the GitHub API limit; ${GITHUB_TOKEN} works
+  containers: true              # Podman/Docker image digests
+  flatpak: true
+  rpm_ostree: true              # bootc/Fedora Atomic staged deployments
+  apps: []
+  # Native apps: version_command is local code and is only read, never updated.
+  # apps:
+  #   - name: Beszel
+  #     repo: henrygd/beszel
+  #     match_unit: beszel-hub.service
+  #     version_command: ["/home/me/srv/beszel/bin/beszel", "--version"]
+  #     version_regex: "v?([0-9.]+)"
+
+actions:
+  - id: restart-caddy
+    label: Restart Caddy
+    description: Restart the user-level Caddy service.
+    command: [systemctl, --user, restart, caddy]
+    timeout: 30s
+    category: services
+
+  - id: update-containers
+    label: Update containers
+    description: Pull and restart containers with auto-update labels.
+    command: [podman, auto-update]
+    timeout: 5m
+    confirm: true
+    dangerous: true
+    category: updates
+
+alerts:
+  enabled: true
+  quiet_hours: "23:00-08:00"
+  digest: true
+  digest_hour: 9
+  cooldown: 6h
+
+  # email:
+  #   host: smtp.example.com
+  #   port: 587
+  #   username: ${SMTP_USER}
+  #   password: ${SMTP_PASSWORD}
+  #   from: binnacle@example.com
+  #   to: [you@example.com]
+  #   tls: starttls              # starttls, tls or none
+
+  # ntfy:
+  #   url: https://ntfy.sh
+  #   topic: ${NTFY_TOPIC}
+  #   # token: ${NTFY_TOKEN}
+
+  # webhook:
+  #   url: ${WEBHOOK_URL}
+  #   format: generic            # generic, discord or slack
+
+  rules:
+    new_service: [email, ntfy]
+    service_down: [email]
+    service_up: [email]
+    exposure: [email, ntfy]
+    urgent_update: [email, ntfy]
+    unit_failed: [email]
+    disk: [email]
+    action_failed: [email]
+    digest: [email]

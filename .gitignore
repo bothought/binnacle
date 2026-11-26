@@ -1,0 +1,19 @@
+# Binaries
+/binnacle
+/dist/
+*.test
+*.out
+
+# Local state and secrets
+*.db
+*.db-shm
+*.db-wal
+.env
+.env.*
+config.yaml
+
+# Editors
+.idea/
+.vscode/
+*.swp
+.DS_Store

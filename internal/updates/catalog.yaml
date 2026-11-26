@@ -1,0 +1,72 @@
+# Built-in release catalog.
+#
+# The catalog maps known container images to their upstream GitHub repository.
+# It ships with the binary and is never downloaded at runtime. Add an entry
+# here (or use updates.apps in your config for local software).
+- name: Caddy
+  repo: caddyserver/caddy
+  container: caddy
+
+- name: Authelia
+  repo: authelia/authelia
+  container: authelia/authelia
+
+- name: Cloudflared
+  repo: cloudflare/cloudflared
+  container: cloudflared
+
+- name: Uptime Kuma
+  repo: louislam/uptime-kuma
+  container: uptime-kuma
+
+- name: Gitea
+  repo: go-gitea/gitea
+  container: gitea/gitea
+
+- name: Forgejo
+  repo: forgejo/forgejo
+  container: forgejo/forgejo
+
+- name: Immich
+  repo: immich-app/immich
+  container: immich-app/immich-server
+
+- name: Nextcloud
+  repo: nextcloud/server
+  container: nextcloud
+
+- name: Jellyfin
+  repo: jellyfin/jellyfin
+  container: jellyfin/jellyfin
+
+- name: Vaultwarden
+  repo: dani-garcia/vaultwarden
+  container: vaultwarden/server
+
+- name: Beszel
+  repo: henrygd/beszel
+  container: henrygd/beszel
+
+- name: Grafana
+  repo: grafana/grafana
+  container: grafana/grafana
+
+- name: Prometheus
+  repo: prometheus/prometheus
+  container: prom/prometheus
+
+- name: Paperless-ngx
+  repo: paperless-ngx/paperless-ngx
+  container: paperless-ngx/paperless-ngx
+
+- name: Home Assistant
+  repo: home-assistant/core
+  container: home-assistant
+
+- name: Miniflux
+  repo: miniflux/v2
+  container: miniflux/miniflux
+
+- name: ntfy
+  repo: binwiederhier/ntfy
+  container: binwiederhier/ntfy

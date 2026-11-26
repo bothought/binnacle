@@ -1,0 +1,94 @@
+{{define "content"}}
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Services</h1>
+      <p class="lead">Listening sockets grouped by the process, systemd unit or container that owns them.</p>
+    </div>
+    <form class="search" method="get" action="/services">
+      <input type="hidden" name="show" value="{{.Filter}}">
+      <input type="search" name="q" value="{{.Query}}" placeholder="search services…" aria-label="Search services">
+      <button type="submit">search</button>
+    </form>
+  </div>
+
+  <div class="toolbar">
+    <div class="filters">
+      <a class="{{if eq .Filter "visible"}}active{{end}}" href="/services">visible</a>
+      <a class="{{if eq .Filter "new"}}active{{end}}" href="/services?show=new">new{{if .NewCount}} <span class="pill">{{.NewCount}}</span>{{end}}</a>
+      <a class="{{if eq .Filter "hidden"}}active{{end}}" href="/services?show=hidden">hidden{{if .HiddenCount}} <span class="pill">{{.HiddenCount}}</span>{{end}}</a>
+      <a class="{{if eq .Filter "all"}}active{{end}}" href="/services?show=all">all <span class="pill">{{.TotalCount}}</span></a>
+      {{if .PublicCount}}<span class="muted">{{.PublicCount}} public</span>{{end}}
+      {{if .Caddy}}<span class="muted">caddy routes resolved</span>{{end}}
+    </div>
+    {{if and .IsAdmin .NewCount}}
+    <form method="post" action="/services/ack-all">
+      <input type="hidden" name="csrf" value="{{.CSRF}}">
+      <button class="ghost" type="submit">acknowledge all new</button>
+    </form>
+    {{end}}
+  </div>
+
+  {{if .Services}}
+  <div class="svc-list">
+    {{range .Services}}
+    <article class="svc-card">
+      <div class="svc-main">
+        <div class="svc-ports">{{.PortText}}</div>
+        <div class="svc-name">
+          <span class="svc-title">{{.Display}}</span>
+          <span class="sub">{{.Name}}{{if .Unit}} · {{.Unit}}{{end}}{{if .Container}} · container {{.Container}}{{end}}</span>
+        </div>
+        <div class="svc-flags">
+          <span class="badge exposure-{{.Exposure}}">{{exposure .Exposure}}</span>
+          <span class="badge vis">{{vis .Visibility}}</span>
+          {{if .IsNew}}<span class="badge new">NEW</span>{{end}}
+          {{if .Muted}}<span class="badge muted-badge">muted</span>{{end}}
+          {{if .Ignored}}<span class="badge ignored">system</span>{{end}}
+        </div>
+        {{if .PublicURL}}<a class="svc-url" href="{{.PublicURL}}" target="_blank" rel="noreferrer noopener">open ↗</a>{{else}}<span></span>{{end}}
+        <span class="sub svc-seen" title="{{datetime .FirstSeen}}">seen {{.LastLabel}}</span>
+      </div>
+      <div class="svc-foot">
+        {{if and $.IsAdmin .IsNew}}
+        <form method="post" action="/services/ack">
+          <input type="hidden" name="csrf" value="{{$.CSRF}}">
+          <input type="hidden" name="key" value="{{.Key}}">
+          <button class="ghost small" type="submit">acknowledge</button>
+        </form>
+        {{end}}
+        <details class="edit">
+          <summary>label / visibility</summary>
+          {{if $.IsAdmin}}
+          <form method="post" action="/services/update" class="edit-form">
+            <input type="hidden" name="csrf" value="{{$.CSRF}}">
+            <input type="hidden" name="key" value="{{.Key}}">
+            <label>label<input name="label" value="{{.Service.Label}}" maxlength="80" placeholder="{{.Name}}"></label>
+            <label>description<input name="description" value="{{.Service.Description}}" maxlength="500"></label>
+            <label>URL<input name="url" value="{{.Service.URL}}" maxlength="300" placeholder="https://…"></label>
+            <label>group<input name="group" value="{{.Service.Group}}" maxlength="60" placeholder="media, infra…"></label>
+            <label>visibility
+              <select name="visibility">
+                <option value="auto" {{if eq .Service.Visibility "auto"}}selected{{end}}>auto</option>
+                <option value="public" {{if eq .Service.Visibility "public"}}selected{{end}}>public</option>
+                <option value="internal" {{if eq .Service.Visibility "internal"}}selected{{end}}>internal</option>
+                <option value="hidden" {{if eq .Service.Visibility "hidden"}}selected{{end}}>hidden</option>
+              </select>
+            </label>
+            <label class="check"><input type="checkbox" name="favorite" {{if .Favorite}}checked{{end}}> favorite</label>
+            <label class="check"><input type="checkbox" name="muted" {{if .Muted}}checked{{end}}> mute alerts</label>
+            <div class="form-actions"><button type="submit">save</button></div>
+          </form>
+          {{else}}
+          <div class="muted pad">Read-only account.</div>
+          {{end}}
+        </details>
+      </div>
+    </article>
+    {{end}}
+  </div>
+  {{else}}
+  <div class="empty">No services match this view. Try <a href="/services?show=all">all services</a>.</div>
+  {{end}}
+</section>
+{{end}}
