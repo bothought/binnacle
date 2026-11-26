@@ -102,7 +102,7 @@ If you need a root command, you have two options:
 
 ```
 # /etc/sudoers.d/binnacle
-rusher ALL=(root) NOPASSWD: /usr/bin/systemctl restart nginx.service
+youruser ALL=(root) NOPASSWD: /usr/bin/systemctl restart nginx.service
 ```
 
 Then invoke it without a shell:
