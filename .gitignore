@@ -8,6 +8,9 @@
 *.db
 *.db-shm
 *.db-wal
+*.key
+*.pem
+*.log
 .env
 .env.*
 config.yaml
